@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>App NT - Dự Đoán MD5</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #0d1117;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Khung điện thoại cài đặt ảnh nền */
+        .phone-frame {
+            width: 360px;
+            height: 640px;
+            background-image: url('image_1fef8a.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 28px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 2px solid #30363d;
+            position: relative;
+        }
+
+        /* Header */
+        .app-header {
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Hiệu ứng chung 7 màu đổi liên tục (Rainbow Animation) */
+        .rainbow-effect {
+            background: linear-gradient(
+                45deg, 
+                #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bfd, #7a00ff, #ff00c8, #ff0000
+            );
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 3s linear infinite;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Chữ NT 7 màu phía trên */
+        .rainbow-text {
+            font-size: 34px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.9));
+        }
+
+        /* Đồng hồ 7 màu phía trên */
+        .datetime-box {
+            margin-top: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            filter: drop-shadow(0 1px 4px rgba(0,0,0,0.9));
+        }
+
+        /* Thân app (khoảng trống bên dưới) */
+        .app-body {
+            flex: 1;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(3px);
+            gap: 10px;
+        }
+
+        /* Giao diện khung dự đoán MD5 */
+        .game-card {
+            width: 100%;
+            background: rgba(22, 27, 34, 0.85);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        }
+
+        .game-title {
+            font-size: 13px;
+            color: #8b949e;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .choice-btn {
+            flex: 1;
+            padding: 10px 0;
+            font-size: 14px;
+            font-weight: bold;
+            border: 2px solid #30363d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #161b22;
+            color: #8b949e;
+        }
+
+        /* Khi nút sáng lên: Chữ bên trong mang hiệu ứng 7 màu */
+        .choice-btn.active-rainbow-text {
+            border-color: #00ffd5;
+            box-shadow: 0 0 15px rgba(0, 255, 213, 0.6);
+            transform: scale(1.03);
+        }
+
+        .choice-btn.active-rainbow-text span {
+            background: linear-gradient(
+                45deg, 
+                #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bfd, #7a00ff, #ff00c8, #ff0000
+            );
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 3s linear infinite;
+            font-weight: 900;
+        }
+
+        .game-result {
+            font-size: 12px;
+            color: #c9d1d9;
+            min-height: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 4px;
+        }
+
+        /* Khu vực dán mã hóa */
+        .encrypt-box {
+            width: 100%;
+            background: rgba(22, 27, 34, 0.85);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .encrypt-input {
+            width: 100%;
+            padding: 8px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 12px;
+            outline: none;
+            resize: none;
+            height: 40px;
+        }
+
+        .encrypt-input:focus {
+            border-color: #58a6ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-frame">
+        <!-- Header: Logo NT + Đồng hồ (7 màu) -->
+        <div class="app-header">
+            <div class="rainbow-effect rainbow-text">NT</div>
+            <div class="rainbow-effect datetime-box" id="clock-display">Đang tải thời gian...</div>
+        </div>
+
+        <!-- Thân App -->
+        <div class="app-body">
+            <!-- Khung Dự Đoán MD5 -->
+            <div class="game-card">
+                <div class="game-title">Dự Đoán MD5</div>
+                <div class="btn-group">
+                    <button class="choice-btn" id="btn-tai" onclick="playMD5('Tài')"><span id="text-tai">TÀI</span></button>
+                    <button class="choice-btn" id="btn-xiu" onclick="playMD5('Xỉu')"><span id="text-xiu">XỈU</span></button>
+                </div>
+                <div class="game-result" id="result-text">Dán mã MD5 ở đây để phân tích!</div>
+            </div>
+
+            <!-- Khu dán mã hóa -->
+            <div class="encrypt-box">
+                <div class="game-title" style="margin-bottom: 6px;">Khu Dán Mã Hóa</div>
+                <textarea class="encrypt-input" id="cipher-input" placeholder="Dán mã MD5 ở đây..." oninput="handleCipherInput()" onclick="clearCipherInput()"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cập nhật đồng hồ thời gian thực
+        function updateClock() {
+            const now = new Date();
+            const daysOfWeek = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+            const dayName = daysOfWeek[now.getDay()];
+            
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            const clockString = `${dayName}, ${day}/${month}/${year} - ${hours}:${minutes}:${seconds}`;
+            document.getElementById("clock-display").innerText = clockString;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        let activeSide = null;
+        let currentRate = 0;
+
+        // Xử lý sự kiện khi dán/nhập mã MD5 vào ô
+        function handleCipherInput() {
+            const inputVal = document.getElementById("cipher-input").value.trim();
+            const btnTai = document.getElementById("btn-tai");
+            const btnXiu = document.getElementById("btn-xiu");
+            const resultBox = document.getElementById("result-text");
+
+            if (inputVal.length > 0) {
+                let cleanText = inputVal.replace(/\s+/g, '');
+                let hashVal = 0;
+                for (let i = 0; i < cleanText.length; i++) {
+                    hashVal += cleanText.charCodeAt(i);
+                }
+
+                activeSide = (hashVal % 2 === 0) ? "Tài" : "Xỉu";
+                currentRate = (hashVal % 11) + 90; // Tỉ lệ ngẫu nhiên từ 90% đến 100%
+
+                if (activeSide === "Tài") {
+                    btnTai.classList.add("active-rainbow-text");
+                    btnXiu.classList.remove("active-rainbow-text");
+                } else {
+                    btnXiu.classList.add("active-rainbow-text");
+                    btnTai.classList.remove("active-rainbow-text");
+                }
+                
+                resultBox.innerHTML = `<span style="color: #00ffd5;">Dự đoán: <b style="color:#fff;">${activeSide.toUpperCase()}</b> | Tỉ lệ: <b style="color: #3fb950;">${currentRate}%</b></span>`;
+            } else {
+                resetGameUI();
+            }
+        }
+
+        // Hàm xóa trắng nội dung khi bấm lại vào ô dán mã hóa
+        function clearCipherInput() {
+            const inputField = document.getElementById("cipher-input");
+            inputField.value = ""; 
+            resetGameUI();         
+        }
+
+        // Đưa giao diện về trạng thái ban đầu
+        function resetGameUI() {
+            activeSide = null;
+            currentRate = 0;
+            const btnTai = document.getElementById("btn-tai");
+            const btnXiu = document.getElementById("btn-xiu");
+            const resultBox = document.getElementById("result-text");
+
+            btnTai.classList.remove("active-rainbow-text");
+            btnXiu.classList.remove("active-rainbow-text");
+            resultBox.innerHTML = "Dán mã MD5 ở đây để phân tích!";
+        }
+
+        // Xử lý logic kết quả khi bấm nút
+        function playMD5(userChoice) {
+            const inputVal = document.getElementById("cipher-input").value.trim();
+            if (inputVal.length === 0) {
+                document.getElementById("result-text").innerHTML = `<span style="color: #f85149;">Vui lòng dán mã MD5 vào ô bên dưới trước!</span>`;
+                return;
+            }
+
+            let cleanText = inputVal.replace(/\s+/g, '') + userChoice;
+            let hashVal = 0;
+            for (let i = 0; i < cleanText.length; i++) {
+                hashVal = (hashVal << 5) - hashVal + cleanText.charCodeAt(i);
+                hashVal |= 0;
+            }
+            hashVal = Math.abs(hashVal);
+
+            let dice1 = (hashVal % 6) + 1;
+            let dice2 = (Math.floor(hashVal / 6) % 6) + 1;
+            let dice3 = (Math.floor(hashVal / 36) % 6) + 1;
+            let totalSum = dice1 + dice2 + dice3;
+            
+            let actualResult = (totalSum >= 11) ? "Tài" : "Xỉu";
+            const resultBox = document.getElementById("result-text");
+            
+            const diceString = `🎲 (${dice1} - ${dice2} - ${dice3}) = <b>${totalSum} điểm</b> (${actualResult})`;
+
+            if (userChoice === actualResult) {
+                resultBox.innerHTML = `${diceString}<br><span style="color: #3fb950; font-weight: bold;">🎉 Đúng bên sáng (${currentRate}%)!</span>`;
+            } else {
+                resultBox.innerHTML = `${diceString}<br><span style="color: #f85149; font-weight: bold;">❌ Ngược lại với bên sáng!</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
